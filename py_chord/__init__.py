@@ -3,10 +3,12 @@ from .node import Node as _Node, RemoteNode as _RemoteNode
 from .abc import INode
 
 
-async def join_network(peer_ip: str = None,
-                       peer_port: int = None,
-                       my_ip: str = "0.0.0.0",
-                       my_port: int = _CHORD_PORT) -> INode:
+async def join_network(
+    peer_ip: str = None,
+    peer_port: int = None,
+    my_ip: str = "0.0.0.0",
+    my_port: int = _CHORD_PORT,
+) -> INode:
     me = _Node(my_ip, my_port)
     await me._start_server()
     if peer_ip:

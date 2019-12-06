@@ -8,15 +8,13 @@ from .errors import InvalidRPC, NodeLeaveError
 from .network import is_between_ids, ChordNetwork, CHORD_PORT, MAINTENANCE_FREQUENCY
 
 
-def node_leave_corrector(func, retry_time=MAINTENANCE_FREQUENCY,
-                         max_retries=2):
+def node_leave_corrector(func, retry_time=MAINTENANCE_FREQUENCY, max_retries=2):
     async def wrapper(self, *args, retries=0, **kwargs):
         try:
             return await func(self, *args, **kwargs)
         except NodeLeaveError:
             if retries >= max_retries:
-                raise NodeLeaveError(
-                    f"Exceeded maximum retries amount: {max_retries}")
+                raise NodeLeaveError(f"Exceeded maximum retries amount: {max_retries}")
             self.local_node.network.remove_left_node(self)
             await asyncio.sleep(retry_time)
             await wrapper(self, *args, retries=retries + 1, **kwargs)
@@ -57,10 +55,10 @@ class Node(INode, INodeServer):
         await self._stop_server()
 
     async def _start_server(self):
-        self._server = await asyncio.start_server(self._handle_request,
-                                                  self.ip, self.port)
-        self._maintenance_task = asyncio.create_task(
-            self._run_maintenance_task())
+        self._server = await asyncio.start_server(
+            self._handle_request, self.ip, self.port
+        )
+        self._maintenance_task = asyncio.create_task(self._run_maintenance_task())
         self._alive = True
 
     async def _stop_server(self):
@@ -87,16 +85,19 @@ class Node(INode, INodeServer):
 
     async def _notify(self, node: INode) -> None:
         if not self._predecessor or is_between_ids(
-                node.id, self._predecessor.id, self.id):
+            node.id, self._predecessor.id, self.id
+        ):
             self._predecessor = node
 
     async def _update_finger_table(self, node: INode, index: int) -> None:
         finger = self.network.finger_table[index]
         if not finger.node or is_between_ids(
-                node.id, finger.start, finger.node.id,
-                first_equality=True):  # Changed from original pseudo-code
+            node.id, finger.start, finger.node.id, first_equality=True
+        ):  # Changed from original pseudo-code
             finger.node = node
-            if self._predecessor and self._predecessor != self:  # Check for avoiding error or recursive call
+            if (
+                self._predecessor and self._predecessor != self
+            ):  # Check for avoiding error or recursive call
                 await self._predecessor._update_finger_table(node, index)
 
     async def _get_successor(self) -> INode:

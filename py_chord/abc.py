@@ -2,8 +2,7 @@ from abc import abstractmethod, ABC
 from hashlib import sha1
 from typing import Any
 
-ID_LENGTH = sha1(
-).digest_size * 8  # Digest size returns bytes amount. not bits amount
+ID_LENGTH = sha1().digest_size * 8  # Digest size returns bytes amount. not bits amount
 
 
 class IDHT(ABC):  # This is the main public API calls
@@ -27,8 +26,9 @@ class INode(IDHT, ABC):
         hash = sha1()
         hash.update(ip.encode())
         hash.update(port.to_bytes(2, "big"))
-        self.id = int.from_bytes(hash.digest(),
-                                 "big")  # SHA-1 result is casted to an integer
+        self.id = int.from_bytes(
+            hash.digest(), "big"
+        )  # SHA-1 result is casted to an integer
 
     @abstractmethod
     async def _is_alive(self):
@@ -67,8 +67,9 @@ class INode(IDHT, ABC):
         pass
 
     def __eq__(self, other):
-        return isinstance(
-            other, INode) and self.ip == other.ip and self.port == other.port
+        return (
+            isinstance(other, INode) and self.ip == other.ip and self.port == other.port
+        )
 
     def __hash__(self):
         return hash(self.id)

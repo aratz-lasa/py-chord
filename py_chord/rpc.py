@@ -112,8 +112,11 @@ async def notify(dst: INode, node: INode) -> None:
 async def update_finger_table(dst: INode, node: INode, index: int) -> None:
     async with _open_node_connection(dst) as conn:
         reader, writer = conn[0], conn[1]
-        payload = _dump_node(node) + SEPARATOR + index.to_bytes(
-            math.ceil(math.log(FINGER_AMOUNT, 2)), "big")
+        payload = (
+            _dump_node(node)
+            + SEPARATOR
+            + index.to_bytes(math.ceil(math.log(FINGER_AMOUNT, 2)), "big")
+        )
         request = _dump_request(UPDATE_FINGER_TABLE_OPCODE, payload)
         writer.write(request)
         await writer.drain()
@@ -169,16 +172,14 @@ async def handle_request(src: INode, request: Request) -> None:
     if request.opcode == STORE_OPCODE:
         value = request.payload
         key = await src.store(value)
-        writer.write(key.to_bytes(FINGER_AMOUNT // 8,
-                                  "big"))  # Send back the key
+        writer.write(key.to_bytes(FINGER_AMOUNT // 8, "big"))  # Send back the key
         await writer.drain()
     elif request.opcode == GET_OPCODE:
         key = int.from_bytes(request.payload, "big")
         value = await src.get(key)
         value_length = len(value)
         length_bytes_amount = _get_int_bytes_amount(value_length)
-        data = value_length.to_bytes(length_bytes_amount,
-                                     "big") + SEPARATOR + value
+        data = value_length.to_bytes(length_bytes_amount, "big") + SEPARATOR + value
         writer.write(data)
         await writer.drain()
     elif request.opcode == IS_ALIVE_OPCODE:
@@ -235,8 +236,13 @@ def _dump_request(opcode: int, payload: bytes) -> bytes:
     payload_length = len(payload)
     length_bytes_amount = _get_int_bytes_amount(payload_length)
 
-    return bytes([opcode]) + SEPARATOR + payload_length.to_bytes(
-        length_bytes_amount, "big") + SEPARATOR + payload
+    return (
+        bytes([opcode])
+        + SEPARATOR
+        + payload_length.to_bytes(length_bytes_amount, "big")
+        + SEPARATOR
+        + payload
+    )
 
 
 def _dump_node(node: INode) -> bytes:
@@ -286,10 +292,7 @@ async def _open_node_connection(dst: INode):
     conn = asyncio.open_connection(dst.ip, dst.port)
     try:
         reader, writer = await asyncio.wait_for(conn, TIMEOUT)
-        yield (
-            reader,
-            writer,
-        )
+        yield (reader, writer)
     except (asyncio.TimeoutError, ConnectionError):
         raise NodeLeaveError()
     finally:

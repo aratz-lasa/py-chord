@@ -127,8 +127,10 @@ async def join_n_nodes(n: int):
     global remote_nodes
     await init_n_nodes(n)
 
-    first_remote_node_local, first_remote_node_remote = remote_nodes[0][
-        0], remote_nodes[0][1]
+    first_remote_node_local, first_remote_node_remote = (
+        remote_nodes[0][0],
+        remote_nodes[0][1],
+    )
     remote_network = first_remote_node_local.network
     await remote_network.join()
     for finger in remote_network.finger_table:
@@ -143,8 +145,7 @@ async def join_n_nodes(n: int):
     for local_node, _ in remote_nodes:
         remote_network = local_node.network
         for finger in remote_network.finger_table:
-            expected_node = _get_expected_node(finger.start,
-                                               remote_nodes_remote)
+            expected_node = _get_expected_node(finger.start, remote_nodes_remote)
             assert finger.node == expected_node
 
     await stop_nodes()
@@ -176,8 +177,7 @@ async def store_with_two_nodes():
     retrieved_content = await node.get(key)
     assert content == retrieved_content
     # Remote storage
-    while _get_expected_node(key,
-                             [node, remote_node_local]) != remote_node_local:
+    while _get_expected_node(key, [node, remote_node_local]) != remote_node_local:
         content += b"a"
         hash = sha1()
         hash.update(content)
@@ -194,8 +194,10 @@ async def store_with_two_nodes():
 async def store_with_n_nodes(n: int):
     global remote_nodes
     await init_n_nodes(n)
-    first_remote_node_local, first_remote_node_remote = remote_nodes[0][
-        0], remote_nodes[0][1]
+    first_remote_node_local, first_remote_node_remote = (
+        remote_nodes[0][0],
+        remote_nodes[0][1],
+    )
     remote_network = first_remote_node_local.network
     await remote_network.join()
     for local_node, _ in remote_nodes[1:]:
@@ -208,8 +210,7 @@ async def store_with_n_nodes(n: int):
     hash.update(content)
     key = int.from_bytes(hash.digest(), "big")
     # Local storage
-    while _get_expected_node(key,
-                             remote_nodes_remote) != first_remote_node_local:
+    while _get_expected_node(key, remote_nodes_remote) != first_remote_node_local:
         content += b"a"
         hash = sha1()
         hash.update(content)
@@ -242,8 +243,10 @@ def test_failure():
 async def failure(n: int):
     global remote_nodes
     await init_n_nodes(n)
-    first_remote_node_local, first_remote_node_remote = remote_nodes[0][
-        0], remote_nodes[0][1]
+    first_remote_node_local, first_remote_node_remote = (
+        remote_nodes[0][0],
+        remote_nodes[0][1],
+    )
     remote_network = first_remote_node_local.network
     await remote_network.join()
     for local_node, _ in remote_nodes[1:]:
@@ -262,8 +265,7 @@ async def failure(n: int):
     for remote_node in remote_nodes_remote:
         remote_network = remote_node.network
         for finger in remote_network.finger_table:
-            expected_node = _get_expected_node(finger.start,
-                                               remote_nodes_remote)
+            expected_node = _get_expected_node(finger.start, remote_nodes_remote)
             assert finger.node == expected_node
 
     await stop_nodes()
@@ -271,6 +273,5 @@ async def failure(n: int):
 
 def _get_expected_node(id, nodes):
     candidate_nodes = list(filter(lambda n: n.id > id, nodes)) or nodes
-    expected_node = reduce(lambda n1, n2: n1 if n1.id < n2.id else n2,
-                           candidate_nodes)
+    expected_node = reduce(lambda n1, n2: n1 if n1.id < n2.id else n2, candidate_nodes)
     return expected_node
