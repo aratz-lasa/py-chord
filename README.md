@@ -21,3 +21,21 @@ Using the Chord lookup protocol, nodes and keys are arranged in an identifier ci
 Each node has a successor and a predecessor. The successor to a node is the next node in the identifier circle in a clockwise direction. The predecessor is counter-clockwise. If there is a node for each possible ID, the successor of node 0 is node 1, and the predecessor of node 0 is node 2<sup>m−1</sup>; however, normally there are "holes" in the sequence. For example, the successor of node 153 may be node 167 (and nodes from 154 to 166 do not exist); in this case, the predecessor of node 167 will be node 153.
 
 Since the successor (or predecessor) of a node may disappear from the network (because of failure or departure), each node records a whole segment of the circle adjacent to it, i.e., the *r* nodes preceding it and the *r* nodes following it. This list results in a high probability that a node is able to correctly locate its successor or predecessor, even if the network in question suffers from a high failure rate. 
+
+## Usage
+```python
+from py_chord import join_network
+
+async def main():
+    host = "127.0.0.1"
+    port = 5678
+    boostrap_node = ("127.0.0.1", 7777)
+
+    network = await join_network(host, port, boostrap_node)
+    
+    file = b"file"
+    file_key = await network.store(file)
+    assert network.get(file_key) == file
+    ...
+    await network.leave()
+```
